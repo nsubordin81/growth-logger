@@ -1,10 +1,11 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import WeeklyPlanForm from '../components/WeeklyPlanForm'
+import OutageForm from '../components/OutageForm'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Mode = 'home' | 'quick-log' | 'snapshot' | 'weekly-plan'
+type Mode = 'home' | 'quick-log' | 'snapshot' | 'weekly-plan' | 'outage'
 type Goal = 'dev' | 'music' | 'fitness' | 'art' | 'learning' | 'admin' | 'personal'
 type StruggleType = 'cognitive' | 'physical' | 'emotional' | 'none'
 
@@ -841,6 +842,53 @@ function SnapshotForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
+type HomeButtonProps = {
+  onClick: () => void
+  accentColor: string
+  hoverBg: string
+  icon: string
+  label: string
+  subtitle: string
+}
+
+function HomeButton({ onClick, accentColor, hoverBg, icon, label, subtitle }: HomeButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '1rem 1.5rem',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderLeft: `3px solid ${accentColor}`,
+        color: 'var(--bright)',
+        fontFamily: 'inherit',
+        fontSize: '0.8rem',
+        fontWeight: 600,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        textAlign: 'left',
+        borderRadius: '3px',
+        transition: 'all 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)' }}
+    >
+      <div>
+        <div>{icon} {label}</div>
+        <div style={{ fontSize: '0.62rem', color: 'var(--dim)', fontWeight: 400, marginTop: '0.2rem', letterSpacing: '0.05em', textTransform: 'none' }}>
+          {subtitle}
+        </div>
+      </div>
+      <span style={{ color: 'var(--muted)' }}>→</span>
+    </button>
+  )
+}
+
 function Home({ onSelect }: { onSelect: (m: Mode) => void }) {
   const [time, setTime] = useState(nowHHMM)
 
@@ -870,116 +918,38 @@ function Home({ onSelect }: { onSelect: (m: Mode) => void }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '320px', margin: '0 auto' }}>
-        <button
+        <HomeButton
           onClick={() => onSelect('quick-log')}
-          style={{
-            padding: '1rem 1.5rem',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid var(--amber)',
-            color: 'var(--bright)',
-            fontFamily: 'inherit',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            textAlign: 'left',
-            borderRadius: '3px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.borderLeftColor = 'var(--amber)'
-            ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.05)'
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'
-          }}
-        >
-          <div>
-            <div>⬛ QUICK LOG</div>
-            <div style={{ fontSize: '0.62rem', color: 'var(--dim)', fontWeight: 400, marginTop: '0.2rem', letterSpacing: '0.05em', textTransform: 'none' }}>
-              Session · feelings · struggle · insight
-            </div>
-          </div>
-          <span style={{ color: 'var(--muted)' }}>→</span>
-        </button>
-
-        <button
-          onClick={() => onSelect('weekly-plan')}
-          style={{
-            padding: '1rem 1.5rem',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid #ec4899',
-            color: 'var(--bright)',
-            fontFamily: 'inherit',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            textAlign: 'left',
-            borderRadius: '3px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(236,72,153,0.05)'
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'
-          }}
-        >
-          <div>
-            <div>◆ WEEKLY PLAN</div>
-            <div style={{ fontSize: '0.62rem', color: 'var(--dim)', fontWeight: 400, marginTop: '0.2rem', letterSpacing: '0.05em', textTransform: 'none' }}>
-              3-2-1 goals · focus areas · struggle calibration
-            </div>
-          </div>
-          <span style={{ color: 'var(--muted)' }}>→</span>
-        </button>
-        <button
+          accentColor="var(--amber)"
+          hoverBg="rgba(245,158,11,0.05)"
+          icon="⬛"
+          label="QUICK LOG"
+          subtitle="Session · feelings · struggle · insight"
+        />
+        <HomeButton
           onClick={() => onSelect('snapshot')}
-          style={{
-            padding: '1rem 1.5rem',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid #06b6d4',
-            color: 'var(--bright)',
-            fontFamily: 'inherit',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            textAlign: 'left',
-            borderRadius: '3px',
-            transition: 'all 0.15s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(6,182,212,0.05)'
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface)'
-          }}
-        >
-          <div>
-            <div>◈ LEARNING SNAPSHOT</div>
-            <div style={{ fontSize: '0.62rem', color: 'var(--dim)', fontWeight: 400, marginTop: '0.2rem', letterSpacing: '0.05em', textTransform: 'none' }}>
-              Recall · verify · insight · micro-challenge
-            </div>
-          </div>
-          <span style={{ color: 'var(--muted)' }}>→</span>
-        </button>
+          accentColor="#06b6d4"
+          hoverBg="rgba(6,182,212,0.05)"
+          icon="◈"
+          label="LEARNING SNAPSHOT"
+          subtitle="Recall · verify · insight · micro-challenge"
+        />
+        <HomeButton
+          onClick={() => onSelect('weekly-plan')}
+          accentColor="#ec4899"
+          hoverBg="rgba(236,72,153,0.05)"
+          icon="◆"
+          label="WEEKLY PLAN"
+          subtitle="3-2-1 goals · focus areas · struggle calibration"
+        />
+        <HomeButton
+          onClick={() => onSelect('outage')}
+          accentColor="#a78bfa"
+          hoverBg="rgba(167,139,250,0.05)"
+          icon="◌"
+          label="OUTAGE LOG"
+          subtitle="Weekend · travel · offline · context for your agent"
+        />
       </div>
 
       <div style={{ marginTop: '3rem', fontSize: '0.6rem', color: 'var(--muted)', letterSpacing: '0.1em' }}>
@@ -1034,6 +1004,7 @@ export default function App() {
     'quick-log': 'QUICK LOG',
     snapshot: 'LEARNING SNAPSHOT',
     'weekly-plan': 'WEEKLY PLAN',
+    outage: 'OUTAGE LOG',
   }
 
   return (
@@ -1079,6 +1050,7 @@ export default function App() {
         {mode === 'quick-log' && <QuickLogForm onDone={() => setMode('home')} addToast={addToast} />}
         {mode === 'snapshot' && <SnapshotForm onDone={() => setMode('home')} addToast={addToast} />}
         {mode === 'weekly-plan' && <WeeklyPlanForm onDone={() => setMode('home')} addToast={addToast} />}
+        {mode === 'outage' && <OutageForm onDone={() => setMode('home')} addToast={addToast} />}
       </main>
 
       <Toasts toasts={toasts} />
