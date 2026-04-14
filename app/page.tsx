@@ -944,6 +944,8 @@ function Home({ onSelect }: { onSelect: (m: Mode) => void }) {
           </div>
           <span style={{ color: 'var(--muted)' }}>→</span>
         </button>
+        <button
+          onClick={() => onSelect('snapshot')}
           style={{
             padding: '1rem 1.5rem',
             background: 'var(--surface)',
