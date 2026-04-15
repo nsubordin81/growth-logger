@@ -114,15 +114,18 @@ function TextInput({
   )
 }
 
-function GoalPicker({ value, onChange }: { value: Goal | ''; onChange: (g: Goal) => void }) {
+function GoalPicker({ value, onChange }: { value: Goal[]; onChange: (g: Goal[]) => void }) {
+  function toggle(key: Goal) {
+    onChange(value.includes(key) ? value.filter(g => g !== key) : [...value, key])
+  }
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
       {(Object.entries(GOAL_META) as [Goal, typeof GOAL_META[Goal]][]).map(([key, meta]) => {
-        const active = value === key
+        const active = value.includes(key)
         return (
           <button
             key={key}
-            onClick={() => onChange(key)}
+            onClick={() => toggle(key)}
             style={{
               padding: '0.3rem 0.75rem',
               borderRadius: '2px',
@@ -321,7 +324,7 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   const [startTime, setStartTime] = useState(nowHHMM)
   const [endTime, setEndTime] = useState('')
   const [title, setTitle] = useState('')
-  const [goal, setGoal] = useState<Goal | ''>('')
+  const [goal, setGoal] = useState<Goal[]>([])
   const [what, setWhat] = useState('')
   const [whyMatters, setWhyMatters] = useState('')
   const [howFelt, setHowFelt] = useState('')
@@ -477,9 +480,13 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
         <div style={{ fontSize: '0.65rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.6rem' }}>
           Preview
         </div>
-        {goal && (
-          <div style={{ color: GOAL_META[goal as Goal]?.color, fontSize: '0.7rem', fontWeight: 700, marginBottom: '0.2rem' }}>
-            [{GOAL_META[goal as Goal]?.label}]
+        {goal.length > 0 && (
+          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginBottom: '0.2rem' }}>
+            {goal.map(g => (
+              <span key={g} style={{ color: GOAL_META[g].color, fontSize: '0.7rem', fontWeight: 700 }}>
+                [{GOAL_META[g].label}]
+              </span>
+            ))}
           </div>
         )}
         <div style={{ color: 'var(--bright)', fontSize: '0.8rem', fontWeight: 600 }}>
@@ -491,7 +498,7 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   ]
 
   const canProceed = [
-    title.trim() && goal,
+    title.trim() && goal.length > 0,
     what.trim(),
     true,
     true,

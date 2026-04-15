@@ -14,17 +14,13 @@ function formatDate(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
-function goalColor(goal: string) {
+function goalLabel(goal: string | string[]) {
   const map: Record<string, string> = {
-    dev: 'DEV',
-    music: 'MUSIC',
-    fitness: 'FITNESS',
-    art: 'ART/CG',
-    learning: 'LEARNING',
-    admin: 'ADMIN',
-    personal: 'PERSONAL',
+    dev: 'DEV', music: 'MUSIC', fitness: 'FITNESS',
+    art: 'ART/CG', learning: 'LEARNING', admin: 'ADMIN', personal: 'PERSONAL',
   }
-  return map[goal] || goal.toUpperCase()
+  const goals = Array.isArray(goal) ? goal : [goal]
+  return goals.map(g => map[g] || g.toUpperCase()).join(' + ')
 }
 
 export async function POST(req: NextRequest) {
@@ -67,7 +63,7 @@ export async function POST(req: NextRequest) {
       : ''
 
     const entry = `
-## ${dateStr} ${timeRange} | ${goalColor(goal)} — ${title}
+## ${dateStr} ${timeRange} | ${goalLabel(goal)} — ${title}
 
 **What:** ${what}
 
