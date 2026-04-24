@@ -12,19 +12,26 @@ function formatTime(date: Date) {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+function domainLabel(domain: string | string[]): string {
+  if (Array.isArray(domain)) {
+    return domain.length ? domain.join(' + ').toUpperCase() : 'GENERAL'
+  }
+  return (domain || 'general').toUpperCase()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
       topic,
-      domain,               // 'dev' | 'music' | 'fitness' | 'art' | 'other'
-      recallAttempt,        // free text - what you think you know
-      actualKnowledge,      // free text - what you verified
-      confusions,           // free text
-      insight,              // free text
-      microChallenge,       // free text
-      confidenceLevel,      // 1-5
-      sources,              // string[]
+      domain,
+      recallAttempt,
+      actualKnowledge,
+      confusions,
+      insight,
+      microChallenge,
+      confidenceLevel,
+      sources,
     } = body
 
     const now = new Date()
@@ -39,10 +46,9 @@ export async function POST(req: NextRequest) {
       ? `\n**Sources / references:** ${sources.join(', ')}`
       : ''
 
-    const entry = `
-## ${dateStr} ${timeStr} | Learning Snapshot — ${topic}
+    const entry = `## ${dateStr} ${timeStr} | Learning Snapshot — ${topic}
 
-**Domain:** ${(domain || 'general').toUpperCase()}
+**Domain:** ${domainLabel(domain)}
 **Confidence after recall:** ${confBar}
 
 **What I was learning:** ${topic}
@@ -63,7 +69,7 @@ ${insight || '_None noted_'}
 ${microChallenge || '_None set_'}
 ${sourceBlock}
 ---
-`.trimStart()
+`
 
     if (!fs.existsSync(OUTPUT_DIR)) {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true })
