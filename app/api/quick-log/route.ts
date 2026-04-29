@@ -32,16 +32,13 @@ export async function POST(req: NextRequest) {
       title,
       goal,
       what,
-      whyMatters,
-      howFelt,
-      struggleLevel,       // 1-5
-      struggleType,        // 'cognitive' | 'physical' | 'emotional' | 'none'
-      lowEffortReward,     // boolean
-      lowEffortRewardNote,
+      weightLossProgress,
+      morningPriority,
+      stretching,
+      patternProgress,
+      pomodoroBlock,
+      pomodoroRhythm,
       keyInsight,
-      actionItems,         // string[]
-      tags,                // string[]
-      weightLossProgress,  // WeightLossProgress object
     } = body
 
     const now = new Date()
@@ -51,41 +48,28 @@ export async function POST(req: NextRequest) {
 
     const timeRange = end ? `${start} - ${end}` : start
 
-    const struggleBar = struggleLevel
-      ? `${'█'.repeat(struggleLevel)}${'░'.repeat(5 - struggleLevel)} ${struggleLevel}/5`
-      : 'Not rated'
-
-    const actionBlock = actionItems && actionItems.length
-      ? `\n**Action Items:**\n${actionItems.map((a: string) => `- [ ] ${a}`).join('\n')}`
-      : ''
-
-    const tagBlock = tags && tags.length
-      ? `\n**Tags:** ${tags.map((t: string) => `#${t}`).join(' ')}`
-      : ''
-
     const entry = `
 ## ${dateStr} ${timeRange} | ${goalLabel(goal)} — ${title}
 
 **What:** ${what}
 
-**Why it matters:** ${whyMatters}
+**Pattern mitigation status:**
+- 🟢 End-of-Day Rush: ${patternProgress?.endOfDayRush || 3}/5 (1=full, 5=none)
+- 🟢 YouTube Distortion: ${patternProgress?.youTubeDistortion || 3}/5 (1=full, 5=none)
 
-**How I felt:** ${howFelt}
+**Pomodoro adherence:**
+- 🟢 60-90 min focus block: ${pomodoroBlock ? '✅' : '❌'}
+- 🟢 25+5 rhythm: ${pomodoroRhythm ? '✅' : '❌'}
 
-**Struggle level:** ${struggleBar}
-**Struggle type:** ${struggleType || 'n/a'}
-
-**Low-effort reward?** ${lowEffortReward ? `Yes${lowEffortRewardNote ? ` — ${lowEffortRewardNote}` : ''}` : 'No'}
-
-**Weight loss habits (today):**
+**Today's priorities check:**
 - 💧 Water first: ${weightLossProgress?.waterFirst ? '✅' : '❌'}
 - 🍽️ Left 20% on plate: ${weightLossProgress?.left20Percent ? '✅' : '❌'}
 - 🧂 Asked for half salt: ${weightLossProgress?.askedHalfSalt ? '✅' : '❌'}
 - 🍗 Protein first: ${weightLossProgress?.proteinFirst ? '✅' : '❌'}
+- ⏰ Morning goal before 9 AM: ${morningPriority ? '✅' : '❌'}
+- 🧘 10-15 min stretching: ${stretching ? '✅' : '❌'}
 
-**Key insight for future-me:** ${keyInsight}
-${actionBlock}
-${tagBlock}
+**Key insight:** ${keyInsight}
 ---
 `.trimStart()
 

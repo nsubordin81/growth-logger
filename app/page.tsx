@@ -339,6 +339,39 @@ function Field({ label, required, children }: { label: string; required?: boolea
 
 // ─── Quick Log Form ───────────────────────────────────────────────────────────
 
+// ─── Dynamic priorities config ───
+const WEEKLY_PRIORITIES = {
+  weightLossHabits: [
+    {id: 'waterFirst', label: '💧 Water first (16oz before meal)', short: 'Water first'},
+    {id: 'left20Percent', label: '🍽️ Left 20% on plate', short: '20% rule'},
+    {id: 'askedHalfSalt', label: '🧂 Asked for half salt', short: 'Half salt'},
+    {id: 'proteinFirst', label: '🍗 Protein first (before carbs)', short: 'Protein first'}
+  ] as const,
+  morningPriority: {id: 'morningPriority', label: '⏰ 1 personal goal before 9 AM', short: 'Morning goal'},
+  stretching: {id: 'stretching', label: '🧘 10-15 min stretching', short: 'Stretching'}
+} as const;
+
+// ─── Helper: dynamic prompt based on adherence ───
+function getDynamicPrompt(weightLoss: WeightLossProgress, morningPriority: boolean, stretching: boolean): string | null {
+  const completed = Object.values(weightLoss).filter(Boolean).length;
+  const morningDone = morningPriority ? 1 : 0;
+  const stretchDone = stretching ? 1 : 0;
+  const total = completed + morningDone + stretchDone;
+  
+  if (total < 3) {
+    return '⚠️ Focus areas:\n- ' + (weightLoss.waterFirst ? '' : '💧 Water first\n- ') + 
+           (weightLoss.left20Percent ? '' : '🍽️ 20% rule\n- ') +
+           (weightLoss.askedHalfSalt ? '' : '🧂 Half salt\n- ') +
+           (weightLoss.proteinFirst ? '' : '🍗 Protein first\n- ') +
+           (morningPriority ? '' : '⏰ Morning goal\n- ') +
+           (stretching ? '' : '🧘 Stretching');
+  } else if (total < 6) {
+    return '✅ Good progress on priorities - keep reinforcing habits!';
+  }
+  return '🎯 All priorities on track - maintain momentum!'
+}
+
+// ─── Quick Log Form (Streamlined) ───
 function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: string, ok: boolean) => void }) {
   const [step, setStep] = useState(0)
   const [startTime, setStartTime] = useState(nowHHMM)
@@ -346,38 +379,199 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   const [title, setTitle] = useState('')
   const [goal, setGoal] = useState<Goal[]>([])
   const [what, setWhat] = useState('')
-  const [whyMatters, setWhyMatters] = useState('')
-  const [howFelt, setHowFelt] = useState('')
-  const [struggleLevel, setStruggleLevel] = useState(0)
-  const [struggleType, setStruggleType] = useState<StruggleType>('cognitive')
-  const [lowEffortReward, setLowEffortReward] = useState(false)
-  const [lowEffortRewardNote, setLowEffortRewardNote] = useState('')
-  const [keyInsight, setKeyInsight] = useState('')
-  const [actionItems, setActionItems] = useState<string[]>([])
-  const [tags, setTags] = useState<string[]>([])
   const [weightLossProgress, setWeightLossProgress] = useState<WeightLossProgress>({
-    waterFirst: false,
-    left20Percent: false,
-    askedHalfSalt: false,
-    proteinFirst: false,
+    waterFirst: false, left20Percent: false, askedHalfSalt: false, proteinFirst: false
   })
+  const [morningPriority, setMorningPriority] = useState(false)
+  const [stretching, setStretching] = useState(false)
+  const [patternProgress, setPatternProgress] = useState({endOfDayRush: 3, youTubeDistortion: 3})
+  const [pomodoroBlock, setPomodoroBlock] = useState(false)
+  const [pomodoroRhythm, setPomodoroRhythm] = useState(false)
+  const [keyInsight, setKeyInsight] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const TOTAL_STEPS = 5
+  const TOTAL_STEPS = 2
 
-  const stepContent = [
-    // Step 0: When + Goal
-    <div key="0" className="animate-fade-up">
-      <Field label="Session start time" required>
-        <input
-          type="time"
-          value={startTime}
-          onChange={e => setStartTime(e.target.value)}
-          style={{ padding: '0.6rem 0.75rem', borderRadius: '3px', width: '140px' }}
-        />
-      </Field>
-      <Field label="Session end time">
-        <input
+  const promptText = getDynamicPrompt(weightLossProgress, morningPriority, stretching)
+  const canProceed = step === 0 ? (startTime && what) : true
+
+  async function submit() {
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/quick-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startTime, endTime, title, goal, what,
+          weightLossProgress, morningPriority, stretching,
+          patternProgress, pomodoroBlock, pomodoroRhythm,
+          keyInsight: keyInsight || (patternProgress.endOfDayRush < 4 ? 'End-of-day rush pattern' : 'Pattern disrupted')
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        addToast(`Logged → ${data.filename}`, true)
+        onDone()
+      } else {
+        addToast(`Error: ${data.error}`, false)
+      }
+    } catch {
+      addToast('Network error — is the server running?', false)
+    }
+    setSubmitting(false)
+  }
+
+  const stepLabels = ['CONTEXT', 'INSIGHT']
+
+  function updateWeightLossProgress(field: keyof WeightLossProgress, value: boolean) {
+    setWeightLossProgress(prev => ({ ...prev, [field]: value }))
+  }
+
+  return (
+    <div style={{ padding: '1.5rem' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ fontSize: '0.7rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>
+          STEP {step + 1} / {TOTAL_STEPS}
+        </div>
+        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          {stepLabels[step]}
+        </div>
+        {promptText && (
+          <div style={{ fontSize: '0.75rem', color: 'var(--text)', marginTop: '0.75rem', whiteSpace: 'pre-line', padding: '0.75rem', background: 'var(--surface)', borderRadius: '3px', border: '1px solid var(--border)' }}>
+            {promptText}
+          </div>
+        )}
+      </div>
+
+      {step === 0 && (
+        <div className="animate-fade-up">
+          <div style={{ marginBottom: '1.5rem' }}>
+            <FieldLabel>Today's Focus</FieldLabel>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+              {WEEKLY_PRIORITIES.weightLossHabits.map(habit => (
+                <div key={habit.id} onClick={() => updateWeightLossProgress(habit.id, !weightLossProgress[habit.id])} style={{ cursor: 'pointer', padding: '0.4rem', background: 'var(--surface)', border: weightLossProgress[habit.id] ? '2px solid var(--green)' : '1px solid var(--border)', borderRadius: '3px', fontSize: '0.75rem' }}>
+                  <span style={{ marginRight: '0.3rem' }}>{weightLossProgress[habit.id] ? '✅' : '⬜'}</span>
+                  {habit.label.split(' (')[0]}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.4rem' }}>
+              <div onClick={() => setMorningPriority(!morningPriority)} style={{ cursor: 'pointer', padding: '0.4rem', flex: 1, background: 'var(--surface)', border: morningPriority ? '2px solid var(--green)' : '1px solid var(--border)', borderRadius: '3px', fontSize: '0.75rem' }}>
+                <span style={{ marginRight: '0.3rem' }}>{morningPriority ? '✅' : '⬜'}</span>
+                {WEEKLY_PRIORITIES.morningPriority.label.split(' (')[0]}
+              </div>
+              <div onClick={() => setStretching(!stretching)} style={{ cursor: 'pointer', padding: '0.4rem', flex: 1, background: 'var(--surface)', border: stretching ? '2px solid var(--green)' : '1px solid var(--border)', borderRadius: '3px', fontSize: '0.75rem' }}>
+                <span style={{ marginRight: '0.3rem' }}>{stretching ? '✅' : '⬜'}</span>
+                {WEEKLY_PRIORITIES.stretching.label.split(' (')[0]}
+              </div>
+            </div>
+          </div>
+
+          <Field label="Start time" required>
+            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={{ padding: '0.4rem', borderRadius: '3px', width: '100px' }} />
+          </Field>
+          <Field label="End time">
+            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={{ padding: '0.4rem', borderRadius: '3px', width: '100px' }} />
+          </Field>
+          <Field label="Goal area(s)">
+            <GoalPicker value={goal} onChange={setGoal} />
+          </Field>
+          <Field label="What did you do?">
+            <textarea value={what} onChange={e => setWhat(e.target.value)} placeholder="Quick summary..." style={{ width: '100%', minHeight: '50px', padding: '0.4rem', borderRadius: '3px', fontSize: '0.85rem', resize: 'vertical' }} />
+          </Field>
+          <Field label="Pattern status (1-5, where 1=full pattern, 5=none)">
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1, padding: '0.4rem', background: 'var(--surface)', borderRadius: '3px' }}>
+                <div style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>End-of-Day Rush</div>
+                <ScaleButtons value={patternProgress.endOfDayRush} onChange={v => setPatternProgress(p => ({...p, endOfDayRush: v}))} />
+              </div>
+              <div style={{ flex: 1, padding: '0.4rem', background: 'var(--surface)', borderRadius: '3px' }}>
+                <div style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>YouTube Distortion</div>
+                <ScaleButtons value={patternProgress.youTubeDistortion} onChange={v => setPatternProgress(p => ({...p, youTubeDistortion: v}))} />
+              </div>
+            </div>
+          </Field>
+          <Field label="Pomodoro adherence">
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.4rem' }}>
+              <ToggleButton value={pomodoroBlock} onChange={setPomodoroBlock} label="60-90 min block" />
+              <ToggleButton value={pomodoroRhythm} onChange={setPomodoroRhythm} label="25+5 rhythm" />
+            </div>
+          </Field>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className="animate-fade-up">
+          <Field label="Key insight (what will future-you remember?)">
+            <textarea value={keyInsight} onChange={e => setKeyInsight(e.target.value)} placeholder="What did you learn?" style={{ width: '100%', minHeight: '80px', padding: '0.4rem', borderRadius: '3px', fontSize: '0.85rem', resize: 'vertical' }} />
+          </Field>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+        <button
+          onClick={() => step > 0 ? setStep(s => s - 1) : onDone()}
+          style={{
+            padding: '0.4rem 0.8rem',
+            fontSize: '0.7rem',
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--dim)',
+            borderRadius: '3px',
+            transition: 'all 0.15s',
+          }}
+        >
+          {step === 0 ? 'CANCEL' : 'BACK'}
+        </button>
+        {step < TOTAL_STEPS - 1 ? (
+          <button
+            onClick={() => canProceed && setStep(s => s + 1)}
+            disabled={!canProceed}
+            style={{
+              padding: '0.4rem 1rem',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              cursor: canProceed ? 'pointer' : 'not-allowed',
+              background: canProceed ? 'var(--amber)' : 'var(--surface)',
+              border: `1px solid ${canProceed ? 'var(--amber)' : 'var(--border)'}`,
+              color: canProceed ? '#000' : 'var(--muted)',
+              borderRadius: '3px',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              transition: 'all 0.15s',
+            }}
+          >
+            NEXT →
+          </button>
+        ) : (
+          <button
+            onClick={submit}
+            disabled={submitting}
+            style={{
+              padding: '0.4rem 1.2rem',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              cursor: submitting ? 'wait' : 'pointer',
+              background: submitting ? 'var(--muted)' : 'var(--green)',
+              border: `1px solid ${submitting ? 'var(--muted)' : 'var(--green)'}`,
+              color: '#000',
+              borderRadius: '3px',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              transition: 'all 0.15s',
+            }}
+          >
+            {submitting ? 'LOGGING…' : '✓ LOG IT'}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
           type="time"
           value={endTime}
           onChange={e => setEndTime(e.target.value)}
