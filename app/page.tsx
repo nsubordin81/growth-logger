@@ -15,6 +15,13 @@ interface Toast {
   ok: boolean
 }
 
+interface WeightLossProgress {
+  waterFirst: boolean
+  left20Percent: boolean
+  askedHalfSalt: boolean
+  proteinFirst: boolean
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function nowHHMM() {
@@ -30,6 +37,19 @@ const GOAL_META: Record<Goal, { label: string; color: string; accent: string }> 
   learning: { label: 'LEARNING', color: '#06b6d4', accent: 'rgba(6,182,212,0.15)' },
   admin:    { label: 'ADMIN',    color: '#6b7280', accent: 'rgba(107,114,128,0.15)' },
   personal: { label: 'PERSONAL', color: '#ec4899', accent: 'rgba(236,72,153,0.15)' },
+}
+
+// ─── WeightLossPrompt Helper ───────────────────────────────────────────────
+// Returns the prompt text based on how many priorities completed today
+
+function getWeightLossPrompt(progress: WeightLossProgress): string | null {
+  const completed = Object.values(progress).filter(Boolean).length
+  if (completed < 2) {
+    return '⚠️ Weight loss priorities: Water first + 20% rule + half salt + protein first'
+  } else if (completed < 4) {
+    return '✅ Some weight loss habits on track - keep pushing!'
+  }
+  return null
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -335,6 +355,12 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   const [keyInsight, setKeyInsight] = useState('')
   const [actionItems, setActionItems] = useState<string[]>([])
   const [tags, setTags] = useState<string[]>([])
+  const [weightLossProgress, setWeightLossProgress] = useState<WeightLossProgress>({
+    waterFirst: false,
+    left20Percent: false,
+    askedHalfSalt: false,
+    proteinFirst: false,
+  })
   const [submitting, setSubmitting] = useState(false)
 
   const TOTAL_STEPS = 5
@@ -449,8 +475,58 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
       </Field>
     </div>,
 
-    // Step 3: Insight + Action items
+    // Step 3: Coaching prompts + Insight + Action items
     <div key="3" className="animate-fade-up">
+      <div style={{
+        background: 'rgba(245,158,11,0.05)',
+        border: '1px solid var(--amber)',
+        borderRadius: '4px',
+        padding: '0.8rem',
+        marginBottom: '0.8rem',
+      }}>
+        <div style={{ fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
+          🚨 Today's 3 Priorities (check which apply):
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <input
+              type="checkbox"
+              checked={weightLossProgress.waterFirst}
+              onChange={(e) => updateWeightLossProgress('waterFirst', e.target.checked)}
+              style={{ accentColor: 'var(--amber)', width: '16px', height: '16px' }}
+            />
+            <span>💧 Water first (16 oz before meal)</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <input
+              type="checkbox"
+              checked={weightLossProgress.left20Percent}
+              onChange={(e) => updateWeightLossProgress('left20Percent', e.target.checked)}
+              style={{ accentColor: 'var(--amber)', width: '16px', height: '16px' }}
+            />
+            <span>🍽️ Left 20% on plate</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <input
+              type="checkbox"
+              checked={weightLossProgress.askedHalfSalt}
+              onChange={(e) => updateWeightLossProgress('askedHalfSalt', e.target.checked)}
+              style={{ accentColor: 'var(--amber)', width: '16px', height: '16px' }}
+            />
+            <span>🧂 Asked for half salt</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem' }}>
+            <input
+              type="checkbox"
+              checked={weightLossProgress.proteinFirst}
+              onChange={(e) => updateWeightLossProgress('proteinFirst', e.target.checked)}
+              style={{ accentColor: 'var(--amber)', width: '16px', height: '16px' }}
+            />
+            <span>🍗 Protein first (before carbs)</span>
+          </label>
+        </div>
+      </div>
+
       <Field label="Key insight for future-me">
         <TextArea
           autoFocus
@@ -514,7 +590,7 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
         body: JSON.stringify({
           startTime, endTime, title, goal, what, whyMatters, howFelt,
           struggleLevel, struggleType, lowEffortReward, lowEffortRewardNote,
-          keyInsight, actionItems, tags,
+          keyInsight, actionItems, tags, weightLossProgress,
         }),
       })
       const data = await res.json()
@@ -531,6 +607,12 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   }
 
   const stepLabels = ['WHEN / WHERE', 'WHAT / WHY', 'FEEL / STRUGGLE', 'INSIGHT', 'CONFIRM']
+
+  function updateWeightLossProgress(field: keyof WeightLossProgress, value: boolean) {
+    setWeightLossProgress(prev => ({ ...prev, [field]: value }))
+  }
+
+  const promptText = getWeightLossPrompt(weightLossProgress)
 
   return (
     <div>

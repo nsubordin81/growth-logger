@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       keyInsight,
       actionItems,         // string[]
       tags,                // string[]
+      weightLossProgress,  // WeightLossProgress object
     } = body
 
     const now = new Date()
@@ -75,6 +76,12 @@ export async function POST(req: NextRequest) {
 **Struggle type:** ${struggleType || 'n/a'}
 
 **Low-effort reward?** ${lowEffortReward ? `Yes${lowEffortRewardNote ? ` — ${lowEffortRewardNote}` : ''}` : 'No'}
+
+**Weight loss habits (today):**
+- 💧 Water first: ${weightLossProgress?.waterFirst ? '✅' : '❌'}
+- 🍽️ Left 20% on plate: ${weightLossProgress?.left20Percent ? '✅' : '❌'}
+- 🧂 Asked for half salt: ${weightLossProgress?.askedHalfSalt ? '✅' : '❌'}
+- 🍗 Protein first: ${weightLossProgress?.proteinFirst ? '✅' : '❌'}
 
 **Key insight for future-me:** ${keyInsight}
 ${actionBlock}
