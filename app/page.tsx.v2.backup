@@ -351,30 +351,8 @@ const WEEKLY_PRIORITIES = {
   stretching: {id: 'stretching', label: '🧘 10-15 min stretching', short: 'Stretching'}
 } as const;
 
-// All main goals with their weekly targets
-const MAIN_GOALS = [
-  { id: 'dev', label: '💻 DEV', target: 160, unit: 'min' },
-  { id: 'music', label: '🎸 MUSIC', target: 160, unit: 'min' },
-  { id: 'art', label: '🎨 ART/CG', target: 100, unit: 'min' },
-  { id: 'fitness_pushups', label: '💪 PUSH-UPS', target: 3, unit: 'sessions' },
-  { id: 'fitness_pullups', label: '擒 PULL-UPS', target: 2, unit: 'sessions' },
-  { id: 'fitness_stretch', label: '🧘 STRETCHING', target: 5, unit: 'sessions' }
-] as const;
-
-// All patterns you are working on
-const PATTERNS = [
-  { id: 'endOfDayRush', label: '🌙 End-of-Day Rush' },
-  { id: 'youTubeDistortion', label: '▶️ YouTube Distortion' },
-  { id: 'taskSwitching', label: '🔀 Task Switching' }
-] as const;
-
 // ─── Helper: dynamic prompt based on adherence ───
-function getDynamicPrompt(
-  weightLoss: WeightLossProgress, 
-  morningPriority: boolean, 
-  stretching: boolean, 
-  goalProgress: Record<string, number>
-): string | null {
+function getDynamicPrompt(weightLoss: WeightLossProgress, morningPriority: boolean, stretching: boolean): string | null {
   const completed = Object.values(weightLoss).filter(Boolean).length;
   const morningDone = morningPriority ? 1 : 0;
   const stretchDone = stretching ? 1 : 0;
@@ -406,11 +384,7 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
   })
   const [morningPriority, setMorningPriority] = useState(false)
   const [stretching, setStretching] = useState(false)
-  const [patternSeverity, setPatternSeverity] = useState({endOfDayRush: 3, youTubeDistortion: 3, taskSwitching: 3})
-  const [goalProgress, setGoalProgress] = useState({
-    dev: 0, music: 0, art: 0,
-    fitness_pushups: 0, fitness_pullups: 0, fitness_stretch: 0
-  })
+  const [patternProgress, setPatternProgress] = useState({endOfDayRush: 3, youTubeDistortion: 3})
   const [pomodoroBlock, setPomodoroBlock] = useState(false)
   const [pomodoroRhythm, setPomodoroRhythm] = useState(false)
   const [keyInsight, setKeyInsight] = useState('')
@@ -418,7 +392,7 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
 
   const TOTAL_STEPS = 2
 
-  const promptText = getDynamicPrompt(weightLossProgress, morningPriority, stretching, goalProgress)
+  const promptText = getDynamicPrompt(weightLossProgress, morningPriority, stretching)
   const canProceed = step === 0 ? (startTime && what) : true
 
   async function submit() {
@@ -429,9 +403,9 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           startTime, endTime, title, goal, what,
-          weightLossProgress, morningPriority, stretching, goalProgress, patternSeverity,
-          pomodoroBlock, pomodoroRhythm,
-          keyInsight: keyInsight || (patternSeverity.endOfDayRush < 4 ? 'End-of-day rush pattern' : 'Pattern disrupted')
+          weightLossProgress, morningPriority, stretching,
+          patternProgress, pomodoroBlock, pomodoroRhythm,
+          keyInsight: keyInsight || (patternProgress.endOfDayRush < 4 ? 'End-of-day rush pattern' : 'Pattern disrupted')
         }),
       })
       const data = await res.json()
@@ -451,17 +425,6 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
 
   function updateWeightLossProgress(field: keyof WeightLossProgress, value: boolean) {
     setWeightLossProgress(prev => ({ ...prev, [field]: value }))
-  }
-
-  function updateGoalProgress(goalId: string, increment: number) {
-    setGoalProgress(prev => ({ ...prev, [goalId]: (prev as Record<string, number>)[goalId] + increment }))
-  }
-
-  function getGoalPercentage(goalId: string): number {
-    const goal = MAIN_GOALS.find(g => g.id === goalId)
-    if (!goal) return 0
-    const current = (goalProgress as Record<string, number>)[goalId] || 0
-    return Math.min(100, Math.round((current / goal.target) * 100))
   }
 
   return (
@@ -520,19 +483,11 @@ function QuickLogForm({ onDone, addToast }: { onDone: () => void; addToast: (m: 
             <div style={{ display: 'flex', gap: '1rem' }}>
               <div style={{ flex: 1, padding: '0.4rem', background: 'var(--surface)', borderRadius: '3px' }}>
                 <div style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>End-of-Day Rush</div>
-                <ScaleButtons value={patternSeverity.endOfDayRush} onChange={v => setPatternSeverity(p => ({ ...p, endOfDayRush: v }))} />
+                <ScaleButtons value={patternProgress.endOfDayRush} onChange={v => setPatternProgress(p => ({...p, endOfDayRush: v}))} />
               </div>
               <div style={{ flex: 1, padding: '0.4rem', background: 'var(--surface)', borderRadius: '3px' }}>
                 <div style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>YouTube Distortion</div>
-                <ScaleButtons value={patternSeverity.youTubeDistortion} onChange={v => setPatternSeverity(p => ({ ...p, youTubeDistortion: v }))} />
-              </div>
-            </div>
-          </Field>
-          <Field label="Pattern Severity (3rd pattern added)">
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1, padding: '0.4rem', background: 'var(--surface)', borderRadius: '3px' }}>
-                <div style={{ fontSize: '0.7rem', marginBottom: '0.3rem' }}>Task Switching</div>
-                <ScaleButtons value={patternSeverity.taskSwitching} onChange={v => setPatternSeverity(p => ({ ...p, taskSwitching: v }))} />
+                <ScaleButtons value={patternProgress.youTubeDistortion} onChange={v => setPatternProgress(p => ({...p, youTubeDistortion: v}))} />
               </div>
             </div>
           </Field>
