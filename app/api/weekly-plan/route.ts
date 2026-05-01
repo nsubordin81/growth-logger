@@ -55,6 +55,11 @@ interface ActionItem {
   goalId: string
 }
 
+function renderGoalItem(g: GoalItem, prefix: string) {
+      const time = g.time ? ` - ${g.time}` : ''
+      return `- [ ] ${prefix}: ${g.goalId} - ${g.task}${time}`
+    }
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -80,10 +85,6 @@ export async function POST(req: NextRequest) {
     const weekLabel = `${year}-W${pad(week)}`
     const weekRange = `${formatDate(monday)} to ${formatDate(sunday)}`
 
-    function renderGoalItem(g: GoalItem, prefix: string) {
-      const time = g.time ? ` - ${g.time}` : ''
-      return `- [ ] ${prefix}: ${g.goalId} - ${g.task}${time}`
-    }
 
     const microBlock = (microGoals as GoalItem[])
       .map((g, i) => renderGoalItem(g, `Micro-Goal ${i + 1}`))
