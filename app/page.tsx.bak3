@@ -424,13 +424,27 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
       reflection,
     }
 
-    const result = await saveToAPI('daily-check', data)
+    const result = await saveToAPI(\'daily-check\', data)
+
+
     setIsSaving(false)
+
+
     
+
+
     if (result.success) {
+
+
       onSave(data)
+
+
     } else {
-      setSaveError(result.error || 'Failed to save')
+
+
+      setSaveError(result.error || \'Failed to save\')
+
+
     }
   }
 
