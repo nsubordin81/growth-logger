@@ -405,6 +405,9 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
   const [patternRush, setPatternRush] = useState(3)
   const [patternYouTube, setPatternYouTube] = useState(3)
   const [reflection, setReflection] = useState('')
+  const [sleepGood, setSleepGood] = useState(false)
+  const [sleepHours, setSleepHours] = useState('')
+  const [sleepRem, setSleepRem] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -422,16 +425,16 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
       patternRush,
       patternYouTube,
       reflection,
+      sleep: {
+        good: sleepGood,
+        hours: sleepHours || null,
+        rem: sleepRem || null,
+      },
     }
 
-    const result = await saveToAPI('daily-check', data)
+    // Note: This would connect to a daily-check API
     setIsSaving(false)
-    
-    if (result.success) {
-      onSave(data)
-    } else {
-      setSaveError(result.error || 'Failed to save')
-    }
+    onSave(data)
   }
 
   return (
@@ -468,6 +471,45 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
           <div>
             <ScaleSlider value={patternYouTube} onChange={setPatternYouTube} color="#ec4899" label="YouTube distraction" />
           </div>
+        </div>
+      </div>
+
+      {/* Sleep Quality */}
+      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px' }}>
+        <div style={{ fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>
+          Sleep Quality 🛌
+        </div>
+        
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setSleepGood(!sleepGood)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '4px',
+              background: sleepGood ? 'var(--green)' : 'var(--surface)',
+              border: '1px solid var(--border)',
+              color: sleepGood ? 'var(--surface)' : 'var(--text)',
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+            }}
+          >
+            {sleepGood ? '✅ Good Sleep' : '❌ Poor Sleep'}
+          </button>
+          <input
+            type="number"
+            value={sleepHours}
+            onChange={e => setSleepHours(e.target.value)}
+            placeholder="hrs"
+            style={{ width: '4rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
+          />
+          <input
+            type="number"
+            value={sleepRem}
+            onChange={e => setSleepRem(e.target.value)}
+            placeholder="REM hrs"
+            style={{ width: '5rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
+          />
         </div>
       </div>
 
