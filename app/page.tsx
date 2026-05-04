@@ -12,6 +12,8 @@ interface Toast {
   ok: boolean
 }
 
+import { ACTIVE_GOALS, WEEKLY_FOCUS, DOMAIN_PERFORMANCE, PATTERN_MITIGATION, WEEKLY_SUMMARY } from '@/src/app-config'
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const GOAL_META: Record<Goal, { label: string; color: string; accent: string }> = {
@@ -174,28 +176,13 @@ function HomeScreen({ onSelect, onQuickLog, onSnapshot, onDailyCheck }: {
   }, [])
 
   // Your active goals and priority framework
-  const activeGoals = [
-    { id: 'G-007', domain: 'Health', title: 'Weight Loss (210→195 lbs)', status: 'URGENT', priority: '🔴' },
-    { id: 'G-001', domain: 'Music', title: 'Songwriting, Guitar Technique', status: 'Active', priority: '🔴' },
-    { id: 'G-002', domain: 'Dev', title: 'Data Architecture, ML Pipeline', status: 'Active', priority: '🟠' },
-    { id: 'G-003', domain: 'Art', title: 'Synapse Flux, Blender Modeling', status: 'Active', priority: '🟠' },
-    { id: 'G-004', domain: 'Fitness', title: 'Push-ups, Strength Training', status: 'Active', priority: '🟢' },
-  ]
+  const activeGoals = ACTIVE_GOALS
 
   // Weekly focus (from coaching)
-  const weeklyFocus = [
-    { label: 'Morning Priority', action: 'Complete before 9 AM', status: '⏳ Not started' },
-    { label: 'YouTube Control', action: 'Reward after work only', status: '✅ Monitoring' },
-    { label: 'Focus Blocks', action: '60-90 min single-domain', status: '⏳ Not started' },
-  ]
+  const weeklyFocus = WEEKLY_FOCUS
 
   // Domain performance summary
-  const domainPerformance = [
-    { domain: 'Art (Synapse)', time: '2,818 min', quality: '3.9/5' },
-    { domain: 'Dev', time: '7,328 min', quality: '3.4/5' },
-    { domain: 'Stretching', time: '146 min', quality: '1.1/5' },
-    { domain: 'Push-ups', time: '536 min', quality: '1.2/5' },
-  ]
+  const domainPerformance = DOMAIN_PERFORMANCE
 
   return (
     <div style={{ textAlign: 'center', padding: '2rem 1rem' }} className="animate-fade-up">
