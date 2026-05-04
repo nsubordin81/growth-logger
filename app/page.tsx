@@ -479,9 +479,14 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
       },
     }
 
-    // Note: This would connect to a daily-check API
+    const result = await saveToAPI('daily-check', data)
     setIsSaving(false)
-    onSave(data)
+    
+    if (result.success) {
+      onSave(data)
+    } else {
+      setSaveError(result.error || 'Failed to save')
+    }
   }
 
   return (
@@ -561,45 +566,7 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
       </div>
 
       {/* Quick reflection */}
-      {/* Sleep Quality */}
-      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px' }}>
-        <div style={{ fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>
-          Sleep Quality 🛌
-        </div>
-        
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setSleepGood(!sleepGood)}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '4px',
-              background: sleepGood ? 'var(--green)' : 'var(--surface)',
-              border: '1px solid var(--border)',
-              color: sleepGood ? 'var(--surface)' : 'var(--text)',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-            }}
-          >
-            {sleepGood ? '✅ Good Sleep' : '❌ Poor Sleep'}
-          </button>
-          <input
-            type="number"
-            value={sleepHours}
-            onChange={e => setSleepHours(e.target.value)}
-            placeholder="hrs"
-            style={{ width: '4rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-          <input
-            type="number"
-            value={sleepRem}
-            onChange={e => setSleepRem(e.target.value)}
-            placeholder="REM hrs"
-            style={{ width: '5rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-        </div>
-      </div>
-
+      {/* Quick reflection */}
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
           Quick reflection (1 sentence) 🧠
@@ -607,33 +574,25 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
         <textarea
           value={reflection}
           onChange={e => setReflection(e.target.value)}
-          placeholder="How did today compare to yesterday?"
-          rows={3}
-          style={{ width: '100%', padding: '0.7rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.5 }}
+          placeholder="What went well? What could be improved?"
+          style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', fontFamily: 'inherit', minHeight: '60px' }}
         />
       </div>
 
       {/* Error */}
-      {saveError && (
-        <div style={{ marginBottom: '1rem', padding: '0.8rem', background: 'rgba(239,68,68,0.15)', border: '1px solid #ef4444', borderRadius: '4px', color: '#ef4444', fontSize: '0.85rem', textAlign: 'center' }}>
-          {saveError}
-        </div>
-      )}
+      {saveError && <div style={{ color: '#ef4444', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center' }}>{saveError}</div>}
 
       {/* Submit */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
-        <Button onClick={onCancel} variant="ghost">CANCEL</Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="primary"
-        >
-          {isSaving ? 'UPDATING...' : '✓ SAVE STATUS'}
-        </Button>
+        <button onClick={onCancel} style={{ padding: '0.5rem 0.9rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase', border: '1px solid var(--border)', background: 'transparent', color: 'var(--dim)' }}>CANCEL</button>
+        <button onClick={handleSubmit} style={{ padding: '0.5rem 0.9rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase', background: '#22c55e', border: '1px solid #22c55e', color: '#000' }}>
+          {isSaving ? 'SAVING...' : '✓ LOG IT'}
+        </button>
       </div>
 
-      {/* Progress count */}
-      <div style={{ marginTop: '2rem', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-        Clicks: <strong>1-2</strong> (Toggle status → Submit)
+      {/* Progress */}
+      <div style={{ marginTop: '2rem', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center' }}>
+        Clicks so far: <strong>2-3</strong> (Daily habits → Reflection)
       </div>
     </div>
   )

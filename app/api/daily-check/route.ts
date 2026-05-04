@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       patternRush,
       patternYouTube,
       reflection,
+      sleep = {},
     } = body
 
     const now = new Date()
@@ -37,9 +38,15 @@ export async function POST(req: NextRequest) {
       pomodoroDone && '⏰ Pomodoro',
     ].filter(Boolean).join(' | ') || 'No priorities updated'
 
+    const sleepInfo = sleep.good 
+      ? `${sleep.hours ? `${sleep.hours} hrs` : ' hrs'} sleep, ${sleep.rem ? `${sleep.rem} REM` : 'REM'}`
+      : 'Poor sleep'
+
     const entry = `## ${todayStr} | Daily Status
 
 **Priorities completed:** ${status}
+
+**Sleep Quality:** ${sleepInfo}
 
 **Pattern Metrics (now):**
 - End-of-day Rush: ${patternRush}/5
