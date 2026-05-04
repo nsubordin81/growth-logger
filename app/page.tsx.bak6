@@ -703,7 +703,6 @@ function SnapshotForm({ onSave, onCancel }: { onSave: (data: any) => void; onCan
           placeholder="e.g., Practice the progression in 3 different keys"
           style={{ width: '100%', padding: '0.7rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', fontFamily: 'inherit', fontSize: '0.85rem' }}
         />
-        </div>
       {/* Step 6: Confidence */}
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
@@ -732,7 +731,7 @@ function SnapshotForm({ onSave, onCancel }: { onSave: (data: any) => void; onCan
 
       {/* Progress count */}
       <div style={{ marginTop: '2rem', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-        Clicks so far: <strong>6</strong> (Topic → Domain → Recall → Insight → Challenge)
+        Clicks so far: <strong>5</strong> (Topic → Domain → Recall → Insight → Challenge)
       </div>
     </div>
   )
