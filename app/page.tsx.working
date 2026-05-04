@@ -173,33 +173,17 @@ function HomeScreen({ onSelect, onQuickLog, onSnapshot, onDailyCheck }: {
     return () => clearInterval(id)
   }, [])
 
-  // Your active goals and priority framework
-  const activeGoals = [
-    { id: 'G-007', domain: 'Health', title: 'Weight Loss (210→195 lbs)', status: 'URGENT', priority: '🔴' },
-    { id: 'G-001', domain: 'Music', title: 'Songwriting, Guitar Technique', status: 'Active', priority: '🔴' },
-    { id: 'G-002', domain: 'Dev', title: 'Data Architecture, ML Pipeline', status: 'Active', priority: '🟠' },
-    { id: 'G-003', domain: 'Art', title: 'Synapse Flux, Blender Modeling', status: 'Active', priority: '🟠' },
-    { id: 'G-004', domain: 'Fitness', title: 'Push-ups, Strength Training', status: 'Active', priority: '🟢' },
-  ]
-
-  // Weekly focus (from coaching)
-  const weeklyFocus = [
-    { label: 'Morning Priority', action: 'Complete before 9 AM', status: '⏳ Not started' },
-    { label: 'YouTube Control', action: 'Reward after work only', status: '✅ Monitoring' },
-    { label: 'Focus Blocks', action: '60-90 min single-domain', status: '⏳ Not started' },
-  ]
-
-  // Domain performance summary
-  const domainPerformance = [
-    { domain: 'Art (Synapse)', time: '2,818 min', quality: '3.9/5' },
-    { domain: 'Dev', time: '7,328 min', quality: '3.4/5' },
-    { domain: 'Stretching', time: '146 min', quality: '1.1/5' },
-    { domain: 'Push-ups', time: '536 min', quality: '1.2/5' },
-  ]
+  // Read recent data for context (would connect to API in real app)
+  // For now, use static mock data
+  const mockData = {
+    morningDone: false,
+    weightLossHabits: [true, false, false, false], // water, 20%, salt, protein
+    patternRush: 3,
+    patternYouTube: 3,
+  }
 
   return (
     <div style={{ textAlign: 'center', padding: '2rem 1rem' }} className="animate-fade-up">
-      {/* Time Display */}
       <div style={{ marginBottom: '2.5rem' }}>
         <div style={{ fontFamily: "'Bebas Neue', Impact, sans-serif", fontSize: 'clamp(3rem, 15vw, 8rem)',
           letterSpacing: '0.05em', color: 'var(--bright)', lineHeight: 1 }}>
@@ -210,92 +194,57 @@ function HomeScreen({ onSelect, onQuickLog, onSnapshot, onDailyCheck }: {
         </div>
       </div>
 
-      {/* Your Active Goals */}
+      {/* Quick Status Indicators */}
       <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px',
         border: '1px solid var(--border)' }}>
         <div style={{ fontSize: '0.62rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem' }}>
-          Your Active Goals 🎯
+          Today's Status
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '400px', margin: '0 auto' }}>
-          {activeGoals.map(goal => (
-            <div key={goal.id} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.8rem',
-              background: goal.status === 'URGENT' ? '#ef444420' : '#f59e0b20',
-              borderRadius: '4px', border: goal.status === 'URGENT' ? '1px solid #ef444440' : '1px solid #f59e0b40'
-            }}>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: goal.status === 'URGENT' ? '#ef4444' : 'var(--text)' }}>
-                  {goal.priority} {goal.id} • {goal.domain}
-                </div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--muted)' }}>{goal.title}</div>
-              </div>
-              {goal.status === 'URGENT' && (
-                <span style={{ fontSize: '0.6rem', background: '#ef4444', color: '#fff', padding: '0.15rem 0.4rem', borderRadius: '2px' }}>
-                  URGENT
-                </span>
-              )}
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8rem' }}>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Morning</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: mockData.morningDone ? 'var(--green)' : 'var(--muted)' }}>
+              {mockData.morningDone ? '✅ Done' : '⏳ Pending'}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Weekly Focus */}
-      <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px',
-        border: '1px solid var(--border)' }}>
-        <div style={{ fontSize: '0.62rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem' }}>
-          This Week's Focus 📋
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '400px', margin: '0 auto' }}>
-          {weeklyFocus.map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text)' }}>{item.label}</div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--dim)' }}>{item.action}</div>
-              </div>
-              <div style={{ 
-                fontSize: '0.65rem', padding: '0.15rem 0.4rem', borderRadius: '2px', fontWeight: 600,
-                background: item.status.includes('Not started') ? '#fbbf2420' : '#22c55e20',
-                color: item.status.includes('Not started') ? '#fbbf24' : '#22c55e'
-              }}>
-                {item.status}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Domain Performance */}
-      <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px',
-        border: '1px solid var(--border)' }}>
-        <div style={{ fontSize: '0.62rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem' }}>
-          Domain Performance 📊
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', maxWidth: '400px', margin: '0 auto' }}>
-          {domainPerformance.map(d => (
-            <div key={d.domain} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text)' }}>{d.domain}</div>
-              <div style={{ fontSize: '0.65rem', color: 'var(--green)' }}>{d.quality} quality</div>
-              <div style={{ fontSize: '0.6rem', color: 'var(--dim)' }}>{d.time}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pattern Mitigation Status */}
-      <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px',
-        border: '1px solid var(--border)' }}>
-        <div style={{ fontSize: '0.62rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem' }}>
-          Pattern Mitigation 🔄
-        </div>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '0.7rem', color: 'var(--dim)' }}>End-of-day Rush</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--amber)' }}>4/5 ⚠️</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '0.7rem', color: 'var(--dim)' }}>YouTube Distraction</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--amber)' }}>3/5 ⚠️</div>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Weight Loss</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--amber)' }}>
+              {mockData.weightLossHabits.filter(Boolean).length}/4
+            </div>
           </div>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>End-of-day Rush</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: mockData.patternRush <= 2 ? 'var(--green)' : 'var(--amber)' }}>
+              {mockData.patternRush}/5 {mockData.patternRush <= 2 ? '✅ Calm' : '⚠️ Rising'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '0.58rem', color: 'var(--dim)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>YouTube Distortion</div>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: mockData.patternYouTube <= 2 ? 'var(--green)' : 'var(--amber)' }}>
+              {mockData.patternYouTube}/5 {mockData.patternYouTube <= 2 ? '✅ Focused' : '⚠️ Distracting'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Check - Status Only (not a form) */}
+      <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px',
+        border: '1px solid var(--border)' }}>
+        <div style={{ fontSize: '0.62rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.8rem' }}>
+          Daily Progress (Update throughout day)
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+          {PRIORITY_ITEMS.map(item => (
+            <ToggleButton 
+              key={item.id}
+              active={item.id === 'water' ? true : false} // Mock data
+              onClick={() => {}} 
+              label={item.label}
+              color={item.color}
+            />
+          ))}
         </div>
       </div>
 
@@ -313,7 +262,11 @@ function HomeScreen({ onSelect, onQuickLog, onSnapshot, onDailyCheck }: {
       </div>
     </div>
   )
-}function QuickLogForm({ onSave, onCancel }: { onSave: (data: any) => void; onCancel: () => void }) {
+}
+
+// ─── Quick Log Form (3 clicks max) ────────────────────────────────────────────
+
+function QuickLogForm({ onSave, onCancel }: { onSave: (data: any) => void; onCancel: () => void }) {
   const [domain, setDomain] = useState<Goal[]>([])
   const [summary, setSummary] = useState('')
   const [patternRush, setPatternRush] = useState(3)
@@ -452,9 +405,6 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
   const [patternRush, setPatternRush] = useState(3)
   const [patternYouTube, setPatternYouTube] = useState(3)
   const [reflection, setReflection] = useState('')
-  const [sleepGood, setSleepGood] = useState(false)
-  const [sleepHours, setSleepHours] = useState('')
-  const [sleepRem, setSleepRem] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -472,16 +422,14 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
       patternRush,
       patternYouTube,
       reflection,
-      sleep: {
-        good: sleepGood,
-        hours: sleepHours || null,
-        rem: sleepRem || null,
-      },
     }
 
-    // Note: This would connect to a daily-check API
+    const result = await saveToAPI('daily-check', data)
     setIsSaving(false)
-    onSave(data)
+
+    if (result.success) {
+      onSave(data)
+    } else {
   }
 
   return (
@@ -521,85 +469,7 @@ function DailyCheckForm({ onSave, onCancel }: { onSave: (data: any) => void; onC
         </div>
       </div>
 
-      {/* Sleep Quality */}
-      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px' }}>
-        <div style={{ fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>
-          Sleep Quality 🛌
-        </div>
-        
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setSleepGood(!sleepGood)}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '4px',
-              background: sleepGood ? 'var(--green)' : 'var(--surface)',
-              border: '1px solid var(--border)',
-              color: sleepGood ? 'var(--surface)' : 'var(--text)',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-            }}
-          >
-            {sleepGood ? '✅ Good Sleep' : '❌ Poor Sleep'}
-          </button>
-          <input
-            type="number"
-            value={sleepHours}
-            onChange={e => setSleepHours(e.target.value)}
-            placeholder="hrs"
-            style={{ width: '4rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-          <input
-            type="number"
-            value={sleepRem}
-            onChange={e => setSleepRem(e.target.value)}
-            placeholder="REM hrs"
-            style={{ width: '5rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-        </div>
-      </div>
-
       {/* Quick reflection */}
-      {/* Sleep Quality */}
-      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--surface)', borderRadius: '6px' }}>
-        <div style={{ fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.8rem' }}>
-          Sleep Quality 🛌
-        </div>
-        
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setSleepGood(!sleepGood)}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '4px',
-              background: sleepGood ? 'var(--green)' : 'var(--surface)',
-              border: '1px solid var(--border)',
-              color: sleepGood ? 'var(--surface)' : 'var(--text)',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-            }}
-          >
-            {sleepGood ? '✅ Good Sleep' : '❌ Poor Sleep'}
-          </button>
-          <input
-            type="number"
-            value={sleepHours}
-            onChange={e => setSleepHours(e.target.value)}
-            placeholder="hrs"
-            style={{ width: '4rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-          <input
-            type="number"
-            value={sleepRem}
-            onChange={e => setSleepRem(e.target.value)}
-            placeholder="REM hrs"
-            style={{ width: '5rem', padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: '0.75rem' }}
-          />
-        </div>
-      </div>
-
       <div style={{ marginBottom: '1.5rem' }}>
         <label style={{ display: 'block', fontSize: '0.6rem', color: 'var(--dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
           Quick reflection (1 sentence) 🧠
@@ -647,7 +517,6 @@ function SnapshotForm({ onSave, onCancel }: { onSave: (data: any) => void; onCan
   const [recall, setRecall] = useState('')
   const [insight, setInsight] = useState('')
   const [challenge, setChallenge] = useState('')
-  const [confidenceLevel, setConfidenceLevel] = useState(3)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -663,7 +532,7 @@ function SnapshotForm({ onSave, onCancel }: { onSave: (data: any) => void; onCan
       confusions: '',
       insight,
       microChallenge: challenge,
-      confidenceLevel,
+      confidenceLevel: 3,
       sources: [],
     }
 
